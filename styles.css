@@ -24,7 +24,6 @@ body {
   justify-content: center;
   background: #222;
   font-size: 18px;
-  transition: all 0.2s ease;
 }
 
 .head {
@@ -32,10 +31,16 @@ body {
   border-color: #0ff;
 }
 
-input, button {
+input, select, button {
   font-size: 18px;
   padding: 0.4em 0.8em;
   margin: 10px;
+}
+
+button:disabled {
+  background-color: #444;
+  color: #aaa;
+  cursor: not-allowed;
 }
 
 #log {
