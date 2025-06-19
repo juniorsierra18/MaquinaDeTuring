@@ -89,43 +89,60 @@ function pasoSuma() {
   let descripcion = '';
 
   switch (estado) {
+    case 'right': descripcion = s === '#' ? '← Retroceder y cambiar a estado read' : '→ Avanzar a la derecha'; break;
+    case 'read':
+      if (s === '0' || s === '1') descripcion = `← Guardar '${s}' como 'c' y moverse a have${s}`;
+      else if (s === '+') descripcion = "→ Reemplazar '+' por '#' y avanzar para limpiar";
+      break;
+    case 'clean_right':
+      descripcion = s === '#' ? '← Ir a buscar marca (O/I)' : `→ Borrar '${s}'`;
+      break;
+    case 'go_to_marker':
+      if (s === 'O' || s === 'I') descripcion = `← Restaurar marca '${s}' a bit real y cambiar a 'rewrite'`;
+      else descripcion = '← Retroceder hasta encontrar marca';
+      break;
+    case 'have0': descripcion = s === '+' ? '← Cambiar a estado add0' : '← Retroceder buscando +'; break;
+    case 'have1': descripcion = s === '+' ? '← Cambiar a estado add1' : '← Retroceder buscando +'; break;
+    case 'add0':
+      if (s === '0' || s === '#') descripcion = `→ Escribir O y avanzar a back0`;
+      else if (s === '1') descripcion = `→ Escribir I y avanzar a back0`;
+      else descripcion = '← Retroceder marca';
+      break;
+    case 'add1':
+      if (s === '0' || s === '#') descripcion = `→ Escribir I y avanzar a back1`;
+      else if (s === '1') descripcion = `← Escribir O y llevar acarreo`;
+      else descripcion = '← Retroceder marca';
+      break;
+    case 'carry':
+      if (s === '0' || s === '#') descripcion = `→ Escribir 1 y avanzar a back1`;
+      else if (s === '1') descripcion = `← Escribir 0 y seguir llevando acarreo`;
+      break;
+    case 'back0': descripcion = s === 'c' ? '← Restaurar a 0 y volver a read' : '→ Avanzar hacia c'; break;
+    case 'back1': descripcion = s === 'c' ? '← Restaurar a 1 y volver a read' : '→ Avanzar hacia c'; break;
+    case 'rewrite':
+      if (s === 'O' || s === 'I') descripcion = `← Reescribir marca '${s}' a bit real`;
+      else if (s === '0' || s === '1') descripcion = '← Seguir limpiando';
+      else if (s === '#') descripcion = '→ Terminar ejecución';
+      break;
+    case 'es#':
+      if (s === 'O' || s === 'I') descripcion = `← Reescribir marca '${s}' a bit real`;
+      else if (s === '0' || s === '1') descripcion = '← Seguir limpiando';
+      else if (s === '#') descripcion = '→ Terminar ejecución';
+      break;
+    case 'done': descripcion = '✅ Finalizado'; break;
+  }
+
+  log(`Suma | Estado: ${estado}, Cabeza: ${cabeza}, Símbolo: '${s}' → ${descripcion}`);
+
+  switch (estado) {
     case 'right':
-      descripcion = s === '#' ? '← Retroceder y cambiar a estado read' : '→ Avanzar a la derecha';
+      if (s === '0' || s === '1' || s === '+') cabeza++;
+      else if (s === '#') { cabeza--; estado = 'read'; }
       break;
     case 'read':
       if (s === '0') { cinta[cabeza] = 'c'; cabeza--; estado = 'have0'; }
       else if (s === '1') { cinta[cabeza] = 'c'; cabeza--; estado = 'have1'; }
       else if (s === '+') { cinta[cabeza] = '#'; cabeza++; estado = 'clean_right'; }
-      break;
-    case 'have0':
-      if (s === '+') { cabeza--; estado = 'add0'; }
-      else { cabeza--; }
-      break;
-    case 'have1':
-      if (s === '+') { cabeza--; estado = 'add1'; }
-      else { cabeza--; }
-      break;
-    case 'add0':
-      if (s === '0' || s === '#') { cinta[cabeza] = 'O'; cabeza++; estado = 'back0'; }
-      else if (s === '1') { cinta[cabeza] = 'I'; cabeza++; estado = 'back0'; }
-      else { cabeza--; }
-      break;
-    case 'add1':
-      if (s === '0' || s === '#') { cinta[cabeza] = 'I'; cabeza++; estado = 'back1'; }
-      else if (s === '1') { cinta[cabeza] = 'O'; cabeza--; estado = 'carry'; }
-      else { cabeza--; }
-      break;
-    case 'carry':
-      if (s === '0' || s === '#') { cinta[cabeza] = '1'; cabeza++; estado = 'back1'; }
-      else if (s === '1') { cinta[cabeza] = '0'; cabeza--; }
-      break;
-    case 'back0':
-      if (['0','1','O','I','+'].includes(s)) cabeza++;
-      else if (s === 'c') { cinta[cabeza] = '0'; cabeza--; estado = 'read'; }
-      break;
-    case 'back1':
-      if (['0','1','O','I','+'].includes(s)) cabeza++;
-      else if (s === 'c') { cinta[cabeza] = '1'; cabeza--; estado = 'read'; }
       break;
     case 'clean_right':
       if (s === '0' || s === '1') { cinta[cabeza] = '#'; cabeza++; }
@@ -134,22 +151,54 @@ function pasoSuma() {
     case 'go_to_marker':
       if (s === 'O') { cinta[cabeza] = '0'; cabeza--; estado = 'rewrite'; }
       else if (s === 'I') { cinta[cabeza] = '1'; cabeza--; estado = 'rewrite'; }
-      else { cabeza--; }
+      else { cabeza--; if (s !== '#') estado = 'es#'; }
+      break;
+    case 'have0':
+      if (s === '0' || s === '1') cabeza--;
+      else if (s === '+') { cabeza--; estado = 'add0'; }
+      break;
+    case 'have1':
+      if (s === '0' || s === '1') cabeza--;
+      else if (s === '+') { cabeza--; estado = 'add1'; }
+      break;
+    case 'add0':
+      if (s === '0' || s === '#') { cinta[cabeza] = 'O'; cabeza++; estado = 'back0'; }
+      else if (s === '1') { cinta[cabeza] = 'I'; cabeza++; estado = 'back0'; }
+      else if (s === 'O' || s === 'I') cabeza--;
+      break;
+    case 'add1':
+      if (s === '0' || s === '#') { cinta[cabeza] = 'I'; cabeza++; estado = 'back1'; }
+      else if (s === '1') { cinta[cabeza] = 'O'; cabeza--; estado = 'carry'; }
+      else if (s === 'O' || s === 'I') cabeza--;
+      break;
+    case 'carry':
+      if (s === '0' || s === '#') { cinta[cabeza] = '1'; cabeza++; estado = 'back1'; }
+      else if (s === '1') { cinta[cabeza] = '0'; cabeza--; }
+      break;
+    case 'back0':
+      if (['0', '1', 'O', 'I', '+'].includes(s)) cabeza++;
+      else if (s === 'c') { cinta[cabeza] = '0'; cabeza--; estado = 'read'; }
+      break;
+    case 'back1':
+      if (['0', '1', 'O', 'I', '+'].includes(s)) cabeza++;
+      else if (s === 'c') { cinta[cabeza] = '1'; cabeza--; estado = 'read'; }
       break;
     case 'rewrite':
       if (s === 'O') { cinta[cabeza] = '0'; cabeza--; }
       else if (s === 'I') { cinta[cabeza] = '1'; cabeza--; }
+      else if (s === '0' || s === '1') { cabeza--; estado = 'es#'; }
       else if (s === '#') { cabeza++; estado = 'done'; }
-      else { cabeza--; }
+      break;
+    case 'es#':
+      if (s === '#') { cabeza++; estado = 'done'; }
+      else estado = 'rewrite';
       break;
     case 'done':
-      descripcion = '✅ Finalizado';
       terminado = true;
       document.getElementById("btnPaso").disabled = true;
       document.getElementById("btnEjecutar").disabled = true;
       break;
   }
 
-  log(`Estado: ${estado}, Cabeza: ${cabeza}, Símbolo: '${s}' → ${descripcion}`);
   renderCinta();
 }

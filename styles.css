@@ -31,7 +31,9 @@ body {
   border-color: #0ff;
 }
 
-input, select, button {
+input,
+select,
+button {
   font-size: 18px;
   padding: 0.4em 0.8em;
   margin: 10px;
