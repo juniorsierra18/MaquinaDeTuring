@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <title>Máquina de Turing – Suma Binaria</title>
+  <title>Máquina de Turing Operaciones Con Binarios</title>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-  <h2>Máquina de Turing – Suma Binaria Paso a Paso</h2>
+  <h2>Máquina de Turing Operaciones Con Binarios</h2>
   <div>
     <input id="bin1" placeholder="Primer binario" oninput="verificarEntradas()" />
-    <select id="operacion">
+    <select id="operacion" onchange="verificarEntradas()">
       <option value="+">+</option>
+      <option value="*">*</option>
     </select>
     <input id="bin2" placeholder="Segundo binario" oninput="verificarEntradas()" />
   </div>
@@ -23,4 +26,5 @@
   <div id="log"><strong>Pasos de ejecución:</strong></div>
   <script src="script.js"></script>
 </body>
+
 </html>
