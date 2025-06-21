@@ -1,4 +1,4 @@
-let cinta = [], cabeza = 0, estado = '', terminado = false, auto = false, operacionActual = '+';
+let cinta = [], cabeza = 0, estado = '', terminado = false, auto = false, operacionActual = '+', negativo = false;
 
 function renderCinta() {
   const div = document.getElementById("tape");
@@ -38,13 +38,20 @@ function verificarEntradas() {
 }
 
 function iniciar() {
-  const b1 = document.getElementById("bin1").value.trim() || "0";
-  const b2 = document.getElementById("bin2").value.trim() || "0";
+  let b1 = document.getElementById("bin1").value.trim() || "0";
+  let b2 = document.getElementById("bin2").value.trim() || "0";
   operacionActual = document.getElementById("operacion").value;
+
+  negativo = false;
+
+  // Inversión de binarios para resta si b1 < b2
+  if (operacionActual === '-' && parseInt(b1, 2) < parseInt(b2, 2)) {
+    [b1, b2] = [b2, b1];
+    negativo = true;
+  }
 
   cinta = [...(b1 + operacionActual + b2).split('')];
 
-  // Asegura que la primera y última celda sean '#'
   if (cinta[0] !== '#') cinta.unshift('#');
   if (cinta[cinta.length - 1] !== '#') cinta.push('#');
 
@@ -401,11 +408,15 @@ function pasoResta() {
       break;
 
     case 'done':
-      terminado = true;
-      document.getElementById("btnPaso").disabled = true;
-      document.getElementById("btnEjecutar").disabled = true;
-      accion = "Proceso finalizado.✅";
-
+      if (negativo) {
+        if (s === '0' || s === '1') { cabeza--; accion = "← Buscando -"; }
+        else if (s === '#') { cinta[cabeza] = '-'; cabeza++; accion = "Ingreso signo negativo"; negativo = false; }
+      } else {
+        terminado = true;
+        document.getElementById("btnPaso").disabled = true;
+        document.getElementById("btnEjecutar").disabled = true;
+        accion = "Proceso finalizado.✅";
+      }
       break;
   }
 
