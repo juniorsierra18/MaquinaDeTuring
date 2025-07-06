@@ -316,43 +316,51 @@ function pasoResta() {
   switch (estado) {
     case 'bfinal':
       if (s === '0' || s === '1'|| s === '-')  { cabeza++; accion = '→ Avanza buscando final'; }
-      else if (s === '#') { cabeza--; estado = 'tomar'; accion = '← retrocede y va a tomar'; }
+      else if (s === '#') { cinta[cabeza] = 'M'; cabeza--; estado = 'back'; accion = '← copia -, retrocede  y va a back'; }
       break;
     
-    case 'tomar':
-      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza--; accion = '← retrocede buscando un digito'; }
-      else if (s === '1') {cinta[cabeza] = 'c', cabeza++; estado = 'copia1'; accion = '→ reemplaza 1 por c y va a copia1'; }
-      else if (s === '0') {cinta[cabeza] = 'c', cabeza++; estado = 'copia0'; accion = '→ reemplaza 0 por c y va a copia0'; }
-      else if (s === '-') {cinta[cabeza] = 'c', cabeza++; estado = 'copia-'; accion = '→ reemplaza - por c y va a copia-'; }
-      else if (s === '#') {cabeza++; estado = 'conver'; accion = '→ No encuentra mas digitos y va a conver'; }
+    case 'back':
+      if (s === '0' || s === '1'|| s === '-')  { cabeza--; accion = '← retrocede'; }
+      else if (s === '#') { cabeza++; estado = 'take'; accion = '→ Avanza'; }
       break;
     
-    case 'copia0':
-      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
-      else if (s === '#') {cinta[cabeza] = 'O', cabeza--; estado = 'tomar'; accion = '← reemplaza # por O y va a tomar'; }
+    case 'take':
+      if (s === '1') {cinta[cabeza] = 'c', cabeza++; estado = 'copy1'; accion = '→ reemplaza 1 por c y va a copia1'; }
+      else if (s === '0') {cinta[cabeza] = 'c', cabeza++; estado = 'copy0'; accion = '→ reemplaza 0 por c y va a copia0'; }
+      else if (s === '-') {cinta[cabeza] = '#', cabeza++; estado = 'next'; accion = '→ Elimina - y va a next'; }
       break;
     
-    case 'copia1':
-      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
-      else if (s === '#') {cinta[cabeza] = 'I', cabeza--; estado = 'tomar'; accion = '← reemplaza # por I y va a tomar'; }
+    case 'copy0':
+      if (s === '0'||s === '1' ||s === '-'|| s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
+      else if (s === '#') {cinta[cabeza] = 'O', cabeza--; estado = 'atras0'; accion = '← reemplaza # por O y va a atras0'; }
       break;
 
-    case 'copia-':
-      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
-      else if (s === '#') {cinta[cabeza] = 'M', cabeza--; estado = 'tomar'; accion = '← reemplaza # por M y va a tomar'; }
+    case 'copy1':
+      if (s === '0'||s === '1' ||s === '-'|| s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
+      else if (s === '#') {cinta[cabeza] = 'I', cabeza--; estado = 'atras1'; accion = '← reemplaza # por I y va a atras1'; }
+      break;
+
+    case 'atras1':
+      if (s === '0'||s === '1' ||s === '-'|| s === 'I'|| s === 'M' || s === 'O')  { cabeza--; accion = '← retrocede'; }
+      else if (s === 'c') {cinta[cabeza] = '#', cabeza++; estado = 'take'; accion = '→ elimina c y va a take'; }
+      break;
+
+    case 'atras0':
+      if (s === '0'||s === '1' ||s === '-'|| s === 'I'|| s === 'M' || s === 'O')  { cabeza--; accion = '← retrocede'; }
+      else if (s === 'c') {cinta[cabeza] = '#', cabeza++; estado = 'take'; accion = '→ elimina c y va a take'; }
       break;
     
-    case 'conver':
-      if (s === 'c')  {cinta[cabeza] = '#', cabeza++; accion = '→ Cambia C por # y avanza'; }
-      else if (s === 'I') {cinta[cabeza] = '1', cabeza++;  accion = '→ Cambia I por 1 y avanza'; }
-      else if (s === 'M') {cinta[cabeza] = '-', cabeza++;  accion = '→ Cambia M por - y avanza'; }
-      else if (s === 'O') {cinta[cabeza] = '0', cabeza++;  accion = '→ Cambia O por 0 y avanza'; }
-      else if (s === '#') { cabeza--; estado = 'ini'; accion = '← Llego al final, retrocede y va a ini'; }
+    case 'next':
+      if (s === '0'||s === '1' ||s === '-'|| s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza'; }
+      else if (s === '#') {cinta[cabeza] = '#', cabeza--; estado = 'change'; accion = '<- retrocede'; }
       break;
     
-    case 'ini':
-      if (s === '-' || s === '0'|| s === '1')  { cabeza--; accion = '← retrocede buscando principio'; }
-      else if (s === '#') { cabeza++; estado = 'right'; accion = '→ llega a principio y avanza a right'; }
+    case 'change':
+      if (s === '0'||s === '1' )  { cabeza--; accion = '<- retrocede'; }
+      else if (s === 'M') {cinta[cabeza] = '-', cabeza--; accion = '<- cambia M por - y retrocede'; }
+      else if (s === 'I') {cinta[cabeza] = '1', cabeza--; accion = '<- cambia I por 1 y retrocede'; }
+      else if (s === 'O') {cinta[cabeza] = '0', cabeza--; accion = '<- cambia O por 0 y retrocede'; }
+      else if (s === '#') {cabeza++; estado = 'right'; accion = '-> intercambio completado, va a right'; }
       break;
     
     case 'right':
@@ -413,16 +421,18 @@ function pasoResta() {
       if (s === 'O') { cinta[cabeza] = '0'; cabeza--; accion = "Reescribe O → 0"; }
       else if (s === 'I') { cinta[cabeza] = '1'; cabeza--; accion = "Reescribe I → 1"; }
       else if (s === '0' || s === '1') { cabeza--; accion = "←"; }
-      else if (s === '#' ) { cabeza++; estado = 'done'; accion = "→ done"; }
+      else if (s === '#' ) { estado = 'done'; accion = "→ done"; }
       break;
 
 
-
+    /*if (negativo) {
+        if (s === '0' || s === '1') { cabeza--; accion = "← Buscando -"; }
+        else if (s === '#') { cinta[cabeza] = '-'; cabeza++; accion = "Ingreso signo negativo"; negativo = false; }*/
     case 'done':
       if (negativo) {
-        if (s === '0' || s === '1') { cabeza--; accion = "← Buscando -"; }
-        else if (s === '#') { cinta[cabeza] = '-'; cabeza++; accion = "Ingreso signo negativo"; negativo = false; }
+        if (s === '#') { cinta[cabeza] = '-';  accion = "Ingreso signo negativo"; negativo = false; }
       } else {
+        cabeza++;
         terminado = true;
         document.getElementById("btnPaso").disabled = true;
         document.getElementById("btnEjecutar").disabled = true;
