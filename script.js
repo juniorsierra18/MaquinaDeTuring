@@ -46,7 +46,6 @@ function iniciar() {
 
   // Inversión de binarios para resta si b1 < b2
   if (operacionActual === '-' && parseInt(b1, 2) < parseInt(b2, 2)) {
-    [b1, b2] = [b2, b1];
     negativo = true;
   }
 
@@ -56,7 +55,16 @@ function iniciar() {
   if (cinta[cinta.length - 1] !== '#') cinta.push('#');
 
   cabeza = 1;
-  estado = operacionActual === '+' ? 'right' : operacionActual === '-' ? 'right' : 'start';
+   if(operacionActual === '+'){
+    estado = 'right';
+   }else if(operacionActual === '-' && negativo===true){
+    estado = 'bfinal';
+   }else if(operacionActual === '-' && negativo===false){
+    estado = 'right';
+   }else{
+    estado = 'start';
+   };
+  //estado = operacionActual === '+' ? 'right' : operacionActual === '-' ? 'right' : 'start';
   terminado = false;
   auto = false;
   document.getElementById("log").innerHTML = "<strong>Pasos de ejecución:</strong>";
@@ -306,6 +314,47 @@ function pasoResta() {
   let accion = '';
 
   switch (estado) {
+    case 'bfinal':
+      if (s === '0' || s === '1'|| s === '-')  { cabeza++; accion = '→ Avanza buscando final'; }
+      else if (s === '#') { cabeza--; estado = 'tomar'; accion = '← retrocede y va a tomar'; }
+      break;
+    
+    case 'tomar':
+      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza--; accion = '← retrocede buscando un digito'; }
+      else if (s === '1') {cinta[cabeza] = 'c', cabeza++; estado = 'copia1'; accion = '→ reemplaza 1 por c y va a copia1'; }
+      else if (s === '0') {cinta[cabeza] = 'c', cabeza++; estado = 'copia0'; accion = '→ reemplaza 0 por c y va a copia0'; }
+      else if (s === '-') {cinta[cabeza] = 'c', cabeza++; estado = 'copia-'; accion = '→ reemplaza - por c y va a copia-'; }
+      else if (s === '#') {cabeza++; estado = 'conver'; accion = '→ No encuentra mas digitos y va a conver'; }
+      break;
+    
+    case 'copia0':
+      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
+      else if (s === '#') {cinta[cabeza] = 'O', cabeza--; estado = 'tomar'; accion = '← reemplaza # por O y va a tomar'; }
+      break;
+    
+    case 'copia1':
+      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
+      else if (s === '#') {cinta[cabeza] = 'I', cabeza--; estado = 'tomar'; accion = '← reemplaza # por I y va a tomar'; }
+      break;
+
+    case 'copia-':
+      if (s === 'c' || s === 'I'|| s === 'M' || s === 'O')  { cabeza++; accion = '→ avanza buscando final'; }
+      else if (s === '#') {cinta[cabeza] = 'M', cabeza--; estado = 'tomar'; accion = '← reemplaza # por M y va a tomar'; }
+      break;
+    
+    case 'conver':
+      if (s === 'c')  {cinta[cabeza] = '#', cabeza++; accion = '→ Cambia C por # y avanza'; }
+      else if (s === 'I') {cinta[cabeza] = '1', cabeza++;  accion = '→ Cambia I por 1 y avanza'; }
+      else if (s === 'M') {cinta[cabeza] = '-', cabeza++;  accion = '→ Cambia M por - y avanza'; }
+      else if (s === 'O') {cinta[cabeza] = '0', cabeza++;  accion = '→ Cambia O por 0 y avanza'; }
+      else if (s === '#') { cabeza--; estado = 'ini'; accion = '← Llego al final, retrocede y va a ini'; }
+      break;
+    
+    case 'ini':
+      if (s === '-' || s === '0'|| s === '1')  { cabeza--; accion = '← retrocede buscando principio'; }
+      else if (s === '#') { cabeza++; estado = 'right'; accion = '→ llega a principio y avanza a right'; }
+      break;
+    
     case 'right':
       if (s === '0' || s === '1') { cabeza++; accion = '→ Avanza'; }
       else if (s === '-') { cabeza++; accion = "→ Pasa el '-'"; }
@@ -318,16 +367,6 @@ function pasoResta() {
       else if (s === '-') { cinta[cabeza] = '#'; cabeza--; estado = 'rewrite'; accion = "Elimina '-' y va a rewrite"; }
       break;
 
-    /*case 'clean_right':
-      if (s === '0' || s === '1') { cinta[cabeza] = '#'; cabeza++; accion = `Limpia ${s}`; }
-      else if (s === '#') { cabeza--; estado = 'go_to_marker'; accion = "← Va hacia go_to_marker"; }
-      break;*/
-
-    /*case 'change':
-      if (s === 'O') { cinta[cabeza] = '0'; cabeza--; estado = 'rewrite'; accion = "Restablece O como 0 y va a rewrite"; }
-      else if (s === 'I') { cinta[cabeza] = '1'; cabeza--; estado = 'rewrite'; accion = "Restablece I como 1 y va a rewrite"; }
-      else if (s === '0' || s === '1' || s === '#') { cabeza--; accion = "← Retrocede"; }
-      break;*/
 
     case 'have0':
       if (s === '0' || s === '1') { cabeza--; accion = "← Buscando -"; }
@@ -352,23 +391,12 @@ function pasoResta() {
       else if (s === '1') { cinta[cabeza] = 'O'; cabeza++; estado = 'back1'; accion = "1 - 1 → O → back1"; } 
       break;
 
-    /*case 'verneg':
-      if (s === 'O') { cabeza--; accion = "← Retrocede"; }
-      else if (s === 'I') { cabeza--; estado = 'esneg'; }
-      else if (s === '#') { cinta[cabeza] = 'I'; cabeza--; estado = 'esneg'; accion = "Negativo: marca con I → esneg"; }
-      break;
-
-    case 'esneg':
-      if (s === '#') { cinta[cabeza] = '-'; cabeza++; estado = 'back1'; accion = "Escribe signo '-' y va a back1"; }
-      else if (s === 'O') { cinta[cabeza] = '1'; cabeza++; estado = 'back1'; accion = "Escribe 1 → back1"; }
-      break;*/
 
     case 'resX0':
       if (s === '0') { cinta[cabeza] = 'Z'; cabeza--; accion = "Marca Z"; }
       else if (s === '1') { cinta[cabeza] = '0'; cabeza++; accion = "Corrige préstamo"; }
       else if (s === 'Z') { cinta[cabeza] = '1'; cabeza++; accion = "Completa préstamo"; }
       else if (s === 'X') { cinta[cabeza] = 'I'; cabeza++; estado = 'back1'; accion = "Finaliza préstamo → back1"; }
-      //else if (s === '#') { cinta[cabeza] = '-'; cabeza++; accion = "Marca negativo"; }
       break;
 
     case 'back0':
@@ -385,26 +413,10 @@ function pasoResta() {
       if (s === 'O') { cinta[cabeza] = '0'; cabeza--; accion = "Reescribe O → 0"; }
       else if (s === 'I') { cinta[cabeza] = '1'; cabeza--; accion = "Reescribe I → 1"; }
       else if (s === '0' || s === '1') { cabeza--; accion = "←"; }
-      //else if (s === '-') { cabeza++; estado = 'esmenos1'; accion = "→ Verifica si es -1"; }
-      else if (s === '#') { cabeza++; estado = 'done'; accion = "→ done"; }
+      else if (s === '#' ) { cabeza++; estado = 'done'; accion = "→ done"; }
       break;
 
-    /*case 'esmenos1':
-      if (s === '1') { cabeza++; accion = "Avanza →"; }
-      else if (s === '0') { cabeza++; estado = 'nomenos1'; accion = "→"; }
-      else if (s === '#') { cabeza--; estado = 'menos1'; accion = "← El numero es -1"; }
-      break;
 
-    case 'menos1':
-      if (s === '1') { cinta[cabeza] = '#'; cabeza--; accion = "← Elimina los 1 de mas"; }
-      else if (s === '-') { cabeza++; accion = "→"; }
-      else if (s === '#') { cinta[cabeza] = '1'; cabeza++; estado = 'done'; accion = "→ Escribe 1"; }
-      break;
-
-    case 'nomenos1':
-      if (s === '0' || s === '1') { cabeza++; accion = "Avanza →"; }
-      else if (s === '#') { cabeza--; estado = 'done'; }
-      break;*/
 
     case 'done':
       if (negativo) {
