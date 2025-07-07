@@ -119,15 +119,10 @@ function pasoSuma() {
     case 'right': descripcion = s === '#' ? '← Retroceder y cambiar a estado read' : '→ Avanzar a la derecha'; break;
     case 'read':
       if (s === '0' || s === '1') descripcion = `← Guardar '${s}' como 'c' y moverse a have${s}`;
-      else if (s === '+') descripcion = "→ Reemplazar '+' por '#' y avanzar para limpiar";
+      else if (s === '+') descripcion = "→ Reemplazar '+' por '#' y retrocede para reescribir";
       break;
-    case 'clean_right':
-      descripcion = s === '#' ? '← Ir a buscar marca (O/I)' : `→ Borrar '${s}'`;
-      break;
-    case 'go_to_marker':
-      if (s === 'O' || s === 'I') descripcion = `← Restaurar marca '${s}' a bit real y cambiar a 'rewrite'`;
-      else descripcion = '← Retroceder hasta encontrar marca';
-      break;
+    
+
     case 'have0': descripcion = s === '+' ? '← Cambiar a estado add0' : '← Retroceder buscando +'; break;
     case 'have1': descripcion = s === '+' ? '← Cambiar a estado add1' : '← Retroceder buscando +'; break;
     case 'add0':
@@ -144,18 +139,14 @@ function pasoSuma() {
       if (s === '0' || s === '#') descripcion = `→ Escribir 1 y avanzar a back1`;
       else if (s === '1') descripcion = `← Escribir 0 y seguir llevando acarreo`;
       break;
-    case 'back0': descripcion = s === 'c' ? '← Restaurar a 0 y volver a read' : '→ Avanzar hacia c'; break;
-    case 'back1': descripcion = s === 'c' ? '← Restaurar a 1 y volver a read' : '→ Avanzar hacia c'; break;
+    case 'back0': descripcion = s === 'c' ? '← Elimina c y volver a read' : '→ Avanzar hacia c'; break;
+    case 'back1': descripcion = s === 'c' ? '← Elimina c y volver a read' : '→ Avanzar hacia c'; break;
     case 'rewrite':
       if (s === 'O' || s === 'I') descripcion = `← Reescribir marca '${s}' a bit real`;
       else if (s === '0' || s === '1') descripcion = '← Seguir limpiando';
       else if (s === '#') descripcion = '→ Terminar ejecución';
       break;
-    case 'es#':
-      if (s === 'O' || s === 'I') descripcion = `← Reescribir marca '${s}' a bit real`;
-      else if (s === '0' || s === '1') descripcion = '← Seguir limpiando';
-      else if (s === '#') descripcion = '→ Terminar ejecución';
-      break;
+    
     case 'done': descripcion = 'Proceso finalizado.✅'; break;
   }
 
@@ -169,17 +160,9 @@ function pasoSuma() {
     case 'read':
       if (s === '0') { cinta[cabeza] = 'c'; cabeza--; estado = 'have0'; }
       else if (s === '1') { cinta[cabeza] = 'c'; cabeza--; estado = 'have1'; }
-      else if (s === '+') { cinta[cabeza] = '#'; cabeza++; estado = 'clean_right'; }
+      else if (s === '+') { cinta[cabeza] = '#'; cabeza--; estado = 'rewrite'; }
       break;
-    case 'clean_right':
-      if (s === '0' || s === '1') { cinta[cabeza] = '#'; cabeza++; }
-      else if (s === '#') { cabeza--; estado = 'go_to_marker'; }
-      break;
-    case 'go_to_marker':
-      if (s === 'O') { cinta[cabeza] = '0'; cabeza--; estado = 'rewrite'; }
-      else if (s === 'I') { cinta[cabeza] = '1'; cabeza--; estado = 'rewrite'; }
-      else { cabeza--; if (s !== '#') estado = 'es#'; }
-      break;
+    
     case 'have0':
       if (s === '0' || s === '1') cabeza--;
       else if (s === '+') { cabeza--; estado = 'add0'; }
@@ -204,22 +187,19 @@ function pasoSuma() {
       break;
     case 'back0':
       if (['0', '1', 'O', 'I', '+'].includes(s)) cabeza++;
-      else if (s === 'c') { cinta[cabeza] = '0'; cabeza--; estado = 'read'; }
+      else if (s === 'c') { cinta[cabeza] = '#'; cabeza--; estado = 'read'; }
       break;
     case 'back1':
       if (['0', '1', 'O', 'I', '+'].includes(s)) cabeza++;
-      else if (s === 'c') { cinta[cabeza] = '1'; cabeza--; estado = 'read'; }
+      else if (s === 'c') { cinta[cabeza] = '#'; cabeza--; estado = 'read'; }
       break;
     case 'rewrite':
       if (s === 'O') { cinta[cabeza] = '0'; cabeza--; }
       else if (s === 'I') { cinta[cabeza] = '1'; cabeza--; }
-      else if (s === '0' || s === '1') { cabeza--; estado = 'es#'; }
+      else if (s === '0' || s === '1') { cabeza--; }
       else if (s === '#') { cabeza++; estado = 'done'; }
       break;
-    case 'es#':
-      if (s === '#') { cabeza++; estado = 'done'; }
-      else estado = 'rewrite';
-      break;
+    
     case 'done':
       terminado = true;
       document.getElementById("btnPaso").disabled = true;
